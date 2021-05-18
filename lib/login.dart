@@ -6,8 +6,10 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _usernameController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _adminNameController = TextEditingController();
+  final _adminPasswordController = TextEditingController();
+  final _userNameController = TextEditingController();
+  final _userPasswordController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,22 +24,16 @@ class _LoginPageState extends State<LoginPage> {
               ],
             ),
             SizedBox(height: 120.0),
-            // TODO: Wrap Username with AccentColorOverride (103)
-            // TODO: Remove filled: true values (103)
-            // TODO: Wrap Password with AccentColorOverride (103)
-            // [Name]
             TextField(
-              controller: _usernameController,
+              controller: _userNameController,
               decoration: InputDecoration(
                 filled: true,
-                labelText: 'Username',
+                labelText: 'Customer Name',
               ),
             ),
-// spacer
             SizedBox(height: 12.0),
-// [Password]
             TextField(
-              controller: _passwordController,
+              controller: _userPasswordController,
               decoration: InputDecoration(
                 filled: true,
                 labelText: 'Password',
@@ -45,17 +41,47 @@ class _LoginPageState extends State<LoginPage> {
               obscureText: true,
             ),
             ButtonBar(
-              // TODO: Add a beveled rectangular border to CANCEL (103)
               children: <Widget>[
                 TextButton(
                   child: Text('CANCEL'),
                   onPressed: () {
-                    _usernameController.clear();
-                    _passwordController.clear();
+                    _userNameController.clear();
+                    _userPasswordController.clear();
                   },
                 ),
-                // TODO: Add an elevation to NEXT (103)
-                // TODO: Add a beveled rectangular border to NEXT (103)
+                ElevatedButton(
+                  child: Text('NEXT'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+            TextField(
+              controller: _adminNameController,
+              decoration: InputDecoration(
+                filled: true,
+                labelText: 'Admin Name',
+              ),
+            ),
+            SizedBox(height: 12.0),
+            TextField(
+              controller: _adminPasswordController,
+              decoration: InputDecoration(
+                filled: true,
+                labelText: 'Password',
+              ),
+              obscureText: true,
+            ),
+            ButtonBar(
+              children: <Widget>[
+                TextButton(
+                  child: Text('CANCEL'),
+                  onPressed: () {
+                    _adminNameController.clear();
+                    _adminPasswordController.clear();
+                  },
+                ),
                 ElevatedButton(
                   child: Text('NEXT'),
                   onPressed: () {
@@ -70,5 +96,3 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-
-// TODO: Add AccentColorOverride (103)

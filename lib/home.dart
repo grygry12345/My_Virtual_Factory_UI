@@ -14,76 +14,91 @@
 
 import 'package:flutter/material.dart';
 
-class HomePage extends StatelessWidget {
-  List<Card> _buildGridCards(int count) {
-    List<Card> cards = List.generate(
-      count,
-      (int index) => Card(
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            AspectRatio(
-              aspectRatio: 18.0 / 11.0,
-              //TODO add assets
-              child: Image.asset('assets/Item.png'),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 8.0),
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final products = ['Coffee', 'Milk', 'Chocolate', 'Banana'];
+  final _orderNameController = TextEditingController();
+  final _orderDeadlineController = TextEditingController();
+  _showFormDialog(BuildContext context) {
+    return showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (param) {
+          return AlertDialog(
+            actions: <Widget>[
+              TextButton(
+                  onPressed: () {
+                    _orderNameController.clear();
+                    _orderDeadlineController.clear();
+                    Navigator.pop(context);
+                  },
+                  child: Text('Cancel')),
+              ElevatedButton(
+                  onPressed: () {
+                    products.add(_orderNameController.text);
+                    _orderNameController.clear();
+                    _orderDeadlineController.clear();
+                    Navigator.pop(context);
+                    setState(() {});
+                  },
+                  child: Text('Order'))
+            ],
+            title: Text('Add Product'),
+            content: SingleChildScrollView(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text('Title'),
-                  SizedBox(height: 8.0),
-                  Text('Secondary Text'),
+                children: [
+                  TextField(
+                    controller: _orderNameController,
+                    decoration: InputDecoration(
+                        labelText: 'Product',
+                        hintText: 'Enter a Product to Order'),
+                  ),
+                  TextField(
+                    controller: _orderDeadlineController,
+                    decoration: InputDecoration(
+                        labelText: 'Deadline',
+                        hintText: 'Enter the Deadline of the Order'),
+                  )
                 ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
-
-    return cards;
+          );
+        });
   }
 
-  // TODO: Add a variable for Category (104)
   @override
   Widget build(BuildContext context) {
-    // TODO: Return an AsymmetricView (104)
-    // TODO: Pass Category variable to AsymmetricView (104)
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(
-            Icons.menu,
-            semanticLabel: 'menu',
+        appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(
+              Icons.menu,
+              semanticLabel: 'menu',
+            ),
+            onPressed: () {},
           ),
-          onPressed: () {
-            print('Menu button');
+          title: Text('Your Orders'),
+        ),
+        body: ListView.builder(
+          itemCount: products.length,
+          padding: EdgeInsets.all(16.0),
+          itemBuilder: (context, index) {
+            return Card(
+              child: ListTile(
+                title: Text(products[index]),
+              ),
+            );
           },
         ),
-        title: Text('Automation System'),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(
-              Icons.search,
-              semanticLabel: 'search',
-            ),
-            onPressed: () {
-              print('Search button');
-            },
-          ),
-        ],
-      ),
-      // TODO: Add a grid view (102)
-      body: GridView.count(
-          crossAxisCount: 2,
-          padding: EdgeInsets.all(16.0),
-          childAspectRatio: 8.0 / 9.0,
-          children: _buildGridCards(10) // Replace
-          ),
-      resizeToAvoidBottomInset: false,
-    );
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            _showFormDialog(context);
+          },
+          child: Icon(Icons.shopping_basket),
+        ));
   }
 }
