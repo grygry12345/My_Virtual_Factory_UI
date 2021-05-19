@@ -32,10 +32,10 @@ class ApiServices {
   }
 
   //Get all Orders
-  Future<List<Product>> getAllOrders() async {
+  Future<List<Order>> getAllOrders() async {
     final response = await client.get(Uri.parse("$baseUrl/Order"));
     if (response.statusCode == 200) {
-      return productFromJson(response.body);
+      return orderFromJson(response.body);
     } else {
       return null;
     }

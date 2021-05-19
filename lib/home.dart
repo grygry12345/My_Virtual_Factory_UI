@@ -30,15 +30,28 @@ class _HomePageState extends State<HomePage> {
   String selectedDate = '';
   String dateFormat = '';
   final productsTest = ['Apple', 'Banana'];
-  ApiServices _apiService = ApiServices();
 
-  String _formatDate(DateTime date) {
+  String _formatDateDB(DateTime date) {
     dateFormat = date.year.toString() +
         '-' +
         date.month.toString() +
         '-' +
         date.day.toString() +
         'T' +
+        date.hour.toString() +
+        ':' +
+        date.minute.toString() +
+        ':' +
+        date.second.toString();
+    return dateFormat;
+  }
+  String _formatDateUX(DateTime date) {
+    dateFormat = date.day.toString() +
+        '-' +
+        date.month.toString() +
+        '-' +
+        date.year.toString() +
+        ' ' +
         date.hour.toString() +
         ':' +
         date.minute.toString() +
@@ -78,7 +91,18 @@ class _HomePageState extends State<HomePage> {
                   ElevatedButton(
                     child: Text('Select a Product'),
                     onPressed: () {
-                      //_showListDialog(products);
+                      SelectDialog.showModal<String>(
+                        context,
+                        label: "Select a Product to Order",
+                        showSearchBox: false,
+                        selectedValue: selectedProduct,
+                        items: productsTest,
+                        onChange: (String selected) {
+                          setState(() {
+                            selectedProduct = selected;
+                          });
+                        },
+                      );
                     },
                   ),
                   SizedBox(height: 2.0),
@@ -88,7 +112,7 @@ class _HomePageState extends State<HomePage> {
                             showTitleActions: true,
                             onChanged: (date) {}, onConfirm: (date) {
                           print('confirm $date');
-                          selectedDate = _formatDate(date);
+                          selectedDate = _formatDateDB(date);
                         }, currentTime: DateTime.now());
                       },
                       child: Text(
@@ -103,6 +127,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    ApiServices _apiService = ApiServices();
+    //Future<List<Product>> products = _apiService.getAllProducts();
+
     return Scaffold(
         appBar: AppBar(
           leading: IconButton(
@@ -132,9 +159,9 @@ class _HomePageState extends State<HomePage> {
         ),*/
         body: SafeArea(
           child: FutureBuilder(
-            future: _apiService.getAllProducts(),
+            future: _apiService.getAllOrders(),
             builder:
-                (BuildContext context, AsyncSnapshot<List<Product>> snapshot) {
+                (BuildContext context, AsyncSnapshot<List<Order>> snapshot) {
               if (snapshot.hasError) {
                 return Center(
                   child: Text(
@@ -142,8 +169,8 @@ class _HomePageState extends State<HomePage> {
                 );
               } else if (snapshot.connectionState == ConnectionState.done) {
                 // Called when the future is resolved (i.e: when the result is returned from the server)
-                List<Product> products = snapshot.data;
-                return _buildListView(products);
+                List<Order> orders = snapshot.data;
+                return _buildOrderListView(orders);
               } else {
                 return Center(
                   child:
@@ -156,45 +183,35 @@ class _HomePageState extends State<HomePage> {
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             _showFormDialog(context);
-            dateFormat = _formatDate(DateTime.now());
+            dateFormat = _formatDateDB(DateTime.now());
             print(dateFormat);
           },
           child: Icon(Icons.shopping_basket),
         ));
   }
 
-  Widget _buildListView(List<Product> products) {
+  Widget _buildOrderListView(List<Order> orders) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       child: ListView.builder(
-        itemCount: products.length,
+        itemCount: orders.length,
         itemBuilder: (context, index) {
-          Product product = products[index];
+          Order order = orders[index];
           return Card(
             child: ListTile(
-              title: Text(product.name.toString()),
-              leading: Text(product.productType.toString()),
+              leading: Text('Order '+order.id.toString()),
+              title: Text('Customer '+order.customerId.toString()+'\'s Order'),
+              subtitle: Text('Order Date: ' +
+                  _formatDateUX(order.orderDate) +
+                  '\nOrder Deadline: ' +
+                  _formatDateUX(order.deadline)),
+                  
               //TODO: Show orders instead of products
               //TODO: Show products in SelectDialog section
             ),
           );
         },
       ),
-    );
-  }
-
-  Future<String> _showListDialog(List<Product> products) {
-    return SelectDialog.showModal<String>(
-      context,
-      label: "Select a Product to Order",
-      showSearchBox: false,
-      selectedValue: selectedProduct,
-      //items: products,
-      onChange: (String selected) {
-        setState(() {
-          selectedProduct = selected;
-        });
-      },
     );
   }
 }
