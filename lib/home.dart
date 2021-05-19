@@ -13,6 +13,8 @@
 // limitations under the License.
 
 import 'package:flutter/material.dart';
+import 'package:select_dialog/select_dialog.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -21,8 +23,26 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final products = ['Coffee', 'Milk', 'Chocolate', 'Banana'];
-  final _orderNameController = TextEditingController();
-  final _orderDeadlineController = TextEditingController();
+  final orders = <Map>[];
+  String selectedProduct = '';
+  String selectedDate = '';
+  String dateFormat = '';
+
+  String _formatDate(DateTime date) {
+    dateFormat = date.year.toString() +
+        '-' +
+        date.month.toString() +
+        '-' +
+        date.day.toString() +
+        'T' +
+        date.hour.toString() +
+        ':' +
+        date.minute.toString() +
+        ':' +
+        date.second.toString();
+    return dateFormat;
+  }
+
   _showFormDialog(BuildContext context) {
     return showDialog(
         context: context,
@@ -32,37 +52,55 @@ class _HomePageState extends State<HomePage> {
             actions: <Widget>[
               TextButton(
                   onPressed: () {
-                    _orderNameController.clear();
-                    _orderDeadlineController.clear();
                     Navigator.pop(context);
                   },
                   child: Text('Cancel')),
               ElevatedButton(
                   onPressed: () {
-                    products.add(_orderNameController.text);
-                    _orderNameController.clear();
-                    _orderDeadlineController.clear();
-                    Navigator.pop(context);
-                    setState(() {});
+                    if (selectedProduct != '' && selectedDate != '') {
+                      orders.add({selectedProduct: selectedDate});
+                      Navigator.pop(context);
+                      selectedProduct = '';
+                      selectedDate = '';
+                      setState(() {});
+                    } else {}
                   },
                   child: Text('Order'))
             ],
-            title: Text('Add Product'),
+            title: Text('Give an Order'),
             content: SingleChildScrollView(
               child: Column(
                 children: [
-                  TextField(
-                    controller: _orderNameController,
-                    decoration: InputDecoration(
-                        labelText: 'Product',
-                        hintText: 'Enter a Product to Order'),
+                  ElevatedButton(
+                    child: Text('Select a Product'),
+                    onPressed: () {
+                      SelectDialog.showModal<String>(
+                        context,
+                        label: "Select a Product to Order",
+                        showSearchBox: false,
+                        selectedValue: selectedProduct,
+                        items: products,
+                        onChange: (String selected) {
+                          setState(() {
+                            selectedProduct = selected;
+                          });
+                        },
+                      );
+                    },
                   ),
-                  TextField(
-                    controller: _orderDeadlineController,
-                    decoration: InputDecoration(
-                        labelText: 'Deadline',
-                        hintText: 'Enter the Deadline of the Order'),
-                  )
+                  SizedBox(height: 2.0),
+                  ElevatedButton(
+                      onPressed: () {
+                        DatePicker.showDateTimePicker(context,
+                            showTitleActions: true,
+                            onChanged: (date) {}, onConfirm: (date) {
+                          print('confirm $date');
+                          selectedDate = _formatDate(date);
+                        }, currentTime: DateTime.now());
+                      },
+                      child: Text(
+                        'Select Deadline',
+                      )),
                 ],
               ),
             ),
@@ -84,12 +122,13 @@ class _HomePageState extends State<HomePage> {
           title: Text('Your Orders'),
         ),
         body: ListView.builder(
-          itemCount: products.length,
+          itemCount: orders.length,
           padding: EdgeInsets.all(16.0),
           itemBuilder: (context, index) {
             return Card(
               child: ListTile(
-                title: Text(products[index]),
+                title: Text(orders[index].keys.toString()),
+                leading: Text(orders[index].values.toString()),
               ),
             );
           },
@@ -97,6 +136,8 @@ class _HomePageState extends State<HomePage> {
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             _showFormDialog(context);
+            dateFormat = _formatDate(DateTime.now());
+            print(dateFormat);
           },
           child: Icon(Icons.shopping_basket),
         ));
