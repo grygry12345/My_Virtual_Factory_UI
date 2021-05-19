@@ -41,46 +41,53 @@ class User {
       };
 }
 
+List<Customer> customerFromJson(String str) =>
+    List<Customer>.from(json.decode(str).map((x) => Customer.fromJson(x)));
+
+String customerToJson(List<Customer> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+
 class Customer {
   Customer({
     this.id,
     this.name,
     this.password,
-    this.orders,
   });
 
   final int id;
   final String name;
   final String password;
-  final List<Order> orders;
 
   Customer copyWith({
     int id,
     String name,
     String password,
-    List<Order> orders,
+    int orders,
   }) =>
       Customer(
         id: id ?? this.id,
         name: name ?? this.name,
         password: password ?? this.password,
-        orders: orders ?? this.orders,
       );
 
   factory Customer.fromJson(Map<String, dynamic> json) => Customer(
         id: json["id"],
         name: json["name"],
         password: json["password"],
-        orders: List<Order>.from(json["orders"].map((x) => Order.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
         "id": id,
         "name": name,
         "password": password,
-        "orders": List<dynamic>.from(orders.map((x) => x.toJson())),
       };
 }
+
+List<Order> orderFromJson(String str) =>
+    List<Order>.from(json.decode(str).map((x) => Order.fromJson(x)));
+
+String orderToJson(List<Order> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class Order {
   Order({
@@ -88,28 +95,26 @@ class Order {
     this.orderDate,
     this.deadline,
     this.customerId,
-    this.orderItem,
   });
 
   final int id;
   final DateTime orderDate;
   final DateTime deadline;
   final int customerId;
-  final List<OrderItem> orderItem;
 
   Order copyWith({
     int id,
     DateTime orderDate,
     DateTime deadline,
     int customerId,
-    List<OrderItem> orderItem,
+    Customer customer,
+    int orderItem,
   }) =>
       Order(
         id: id ?? this.id,
         orderDate: orderDate ?? this.orderDate,
         deadline: deadline ?? this.deadline,
         customerId: customerId ?? this.customerId,
-        orderItem: orderItem ?? this.orderItem,
       );
 
   factory Order.fromJson(Map<String, dynamic> json) => Order(
@@ -117,8 +122,6 @@ class Order {
         orderDate: DateTime.parse(json["orderDate"]),
         deadline: DateTime.parse(json["deadline"]),
         customerId: json["customerId"],
-        orderItem: List<OrderItem>.from(
-            json["orderItem"].map((x) => OrderItem.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
@@ -128,9 +131,14 @@ class Order {
         "deadline":
             "${deadline.year.toString().padLeft(4, '0')}-${deadline.month.toString().padLeft(2, '0')}-${deadline.day.toString().padLeft(2, '0')}",
         "customerId": customerId,
-        "orderItem": List<dynamic>.from(orderItem.map((x) => x.toJson())),
       };
 }
+
+List<OrderItem> orderItemFromJson(String str) =>
+    List<OrderItem>.from(json.decode(str).map((x) => OrderItem.fromJson(x)));
+
+String orderItemToJson(List<OrderItem> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class OrderItem {
   OrderItem({
@@ -138,19 +146,18 @@ class OrderItem {
     this.amount,
     this.orderId,
     this.productId,
-    this.product,
   });
 
   final int id;
   final String amount;
   final int orderId;
   final String productId;
-  final Product product;
 
   OrderItem copyWith({
     int id,
     String amount,
     int orderId,
+    Order order,
     String productId,
     Product product,
   }) =>
@@ -159,7 +166,6 @@ class OrderItem {
         amount: amount ?? this.amount,
         orderId: orderId ?? this.orderId,
         productId: productId ?? this.productId,
-        product: product ?? this.product,
       );
 
   factory OrderItem.fromJson(Map<String, dynamic> json) => OrderItem(
@@ -167,7 +173,6 @@ class OrderItem {
         amount: json["amount"],
         orderId: json["orderId"],
         productId: json["productId"],
-        product: Product.fromJson(json["product"]),
       );
 
   Map<String, dynamic> toJson() => {
@@ -175,9 +180,14 @@ class OrderItem {
         "amount": amount,
         "orderId": orderId,
         "productId": productId,
-        "product": product.toJson(),
       };
 }
+
+List<Product> productFromJson(String str) =>
+    List<Product>.from(json.decode(str).map((x) => Product.fromJson(x)));
+
+String productToJson(List<Product> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class Product {
   Product({
@@ -185,25 +195,19 @@ class Product {
     this.name,
     this.productType,
     this.isSalable,
-    this.orderItem,
-    this.subProductTree,
-    this.schedule,
   });
 
   final String id;
   final String name;
   final String productType;
   final bool isSalable;
-  final List<dynamic> orderItem;
-  final List<SubProductTree> subProductTree;
-  final List<Schedule> schedule;
 
   Product copyWith({
     String id,
     String name,
     String productType,
     bool isSalable,
-    List<dynamic> orderItem,
+    List<OrderItem> orderItem,
     List<SubProductTree> subProductTree,
     List<Schedule> schedule,
   }) =>
@@ -212,9 +216,6 @@ class Product {
         name: name ?? this.name,
         productType: productType ?? this.productType,
         isSalable: isSalable ?? this.isSalable,
-        orderItem: orderItem ?? this.orderItem,
-        subProductTree: subProductTree ?? this.subProductTree,
-        schedule: schedule ?? this.schedule,
       );
 
   factory Product.fromJson(Map<String, dynamic> json) => Product(
@@ -222,11 +223,6 @@ class Product {
         name: json["name"],
         productType: json["productType"],
         isSalable: json["isSalable"],
-        orderItem: List<dynamic>.from(json["orderItem"].map((x) => x)),
-        subProductTree: List<SubProductTree>.from(
-            json["subProductTree"].map((x) => SubProductTree.fromJson(x))),
-        schedule: List<Schedule>.from(
-            json["schedule"].map((x) => Schedule.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
@@ -234,206 +230,15 @@ class Product {
         "name": name,
         "productType": productType,
         "isSalable": isSalable,
-        "orderItem": List<dynamic>.from(orderItem.map((x) => x)),
-        "subProductTree":
-            List<dynamic>.from(subProductTree.map((x) => x.toJson())),
-        "schedule": List<dynamic>.from(schedule.map((x) => x.toJson())),
       };
 }
 
-class Schedule {
-  Schedule({
-    this.id,
-    this.start,
-    this.end,
-    this.workCenterId,
-    this.workCenter,
-    this.productId,
-  });
+List<SubProductTree> subProductTreeFromJson(String str) =>
+    List<SubProductTree>.from(
+        json.decode(str).map((x) => SubProductTree.fromJson(x)));
 
-  final int id;
-  final int start;
-  final int end;
-  final int workCenterId;
-  final WorkCenter workCenter;
-  final String productId;
-
-  Schedule copyWith({
-    int id,
-    int start,
-    int end,
-    int workCenterId,
-    WorkCenter workCenter,
-    String productId,
-  }) =>
-      Schedule(
-        id: id ?? this.id,
-        start: start ?? this.start,
-        end: end ?? this.end,
-        workCenterId: workCenterId ?? this.workCenterId,
-        workCenter: workCenter ?? this.workCenter,
-        productId: productId ?? this.productId,
-      );
-
-  factory Schedule.fromJson(Map<String, dynamic> json) => Schedule(
-        id: json["id"],
-        start: json["start"],
-        end: json["end"],
-        workCenterId: json["workCenterId"],
-        workCenter: WorkCenter.fromJson(json["workCenter"]),
-        productId: json["productId"],
-      );
-
-  Map<String, dynamic> toJson() => {
-        "id": id,
-        "start": start,
-        "end": end,
-        "workCenterId": workCenterId,
-        "workCenter": workCenter.toJson(),
-        "productId": productId,
-      };
-}
-
-class WorkCenter {
-  WorkCenter({
-    this.id,
-    this.name,
-    this.active,
-    this.workCenterOperation,
-    this.schedule,
-  });
-
-  final int id;
-  final String name;
-  final bool active;
-  final List<WorkCenterOperation> workCenterOperation;
-  final List<dynamic> schedule;
-
-  WorkCenter copyWith({
-    int id,
-    String name,
-    bool active,
-    List<WorkCenterOperation> workCenterOperation,
-    List<dynamic> schedule,
-  }) =>
-      WorkCenter(
-        id: id ?? this.id,
-        name: name ?? this.name,
-        active: active ?? this.active,
-        workCenterOperation: workCenterOperation ?? this.workCenterOperation,
-        schedule: schedule ?? this.schedule,
-      );
-
-  factory WorkCenter.fromJson(Map<String, dynamic> json) => WorkCenter(
-        id: json["id"],
-        name: json["name"],
-        active: json["active"],
-        workCenterOperation: List<WorkCenterOperation>.from(
-            json["workCenterOperation"]
-                .map((x) => WorkCenterOperation.fromJson(x))),
-        schedule: List<dynamic>.from(json["schedule"].map((x) => x)),
-      );
-
-  Map<String, dynamic> toJson() => {
-        "id": id,
-        "name": name,
-        "active": active,
-        "workCenterOperation":
-            List<dynamic>.from(workCenterOperation.map((x) => x.toJson())),
-        "schedule": List<dynamic>.from(schedule.map((x) => x)),
-      };
-}
-
-class WorkCenterOperation {
-  WorkCenterOperation({
-    this.id,
-    this.speed,
-    this.workCenterId,
-    this.operationId,
-    this.operation,
-  });
-
-  final int id;
-  final int speed;
-  final int workCenterId;
-  final int operationId;
-  final Operation operation;
-
-  WorkCenterOperation copyWith({
-    int id,
-    int speed,
-    int workCenterId,
-    int operationId,
-    Operation operation,
-  }) =>
-      WorkCenterOperation(
-        id: id ?? this.id,
-        speed: speed ?? this.speed,
-        workCenterId: workCenterId ?? this.workCenterId,
-        operationId: operationId ?? this.operationId,
-        operation: operation ?? this.operation,
-      );
-
-  factory WorkCenterOperation.fromJson(Map<String, dynamic> json) =>
-      WorkCenterOperation(
-        id: json["id"],
-        speed: json["speed"],
-        workCenterId: json["workCenterId"],
-        operationId: json["operationId"],
-        operation: Operation.fromJson(json["operation"]),
-      );
-
-  Map<String, dynamic> toJson() => {
-        "id": id,
-        "speed": speed,
-        "workCenterId": workCenterId,
-        "operationId": operationId,
-        "operation": operation.toJson(),
-      };
-}
-
-class Operation {
-  Operation({
-    this.id,
-    this.name,
-    this.productType,
-    this.workCenterOperations,
-  });
-
-  final int id;
-  final String name;
-  final String productType;
-  final List<dynamic> workCenterOperations;
-
-  Operation copyWith({
-    int id,
-    String name,
-    String productType,
-    List<dynamic> workCenterOperations,
-  }) =>
-      Operation(
-        id: id ?? this.id,
-        name: name ?? this.name,
-        productType: productType ?? this.productType,
-        workCenterOperations: workCenterOperations ?? this.workCenterOperations,
-      );
-
-  factory Operation.fromJson(Map<String, dynamic> json) => Operation(
-        id: json["id"],
-        name: json["name"],
-        productType: json["productType"],
-        workCenterOperations:
-            List<dynamic>.from(json["workCenterOperations"].map((x) => x)),
-      );
-
-  Map<String, dynamic> toJson() => {
-        "id": id,
-        "name": name,
-        "productType": productType,
-        "workCenterOperations":
-            List<dynamic>.from(workCenterOperations.map((x) => x)),
-      };
-}
+String subProductTreeToJson(List<SubProductTree> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class SubProductTree {
   SubProductTree({
@@ -452,6 +257,7 @@ class SubProductTree {
     int id,
     String subproduct,
     String productId,
+    Product product,
     String amount,
   }) =>
       SubProductTree(
@@ -473,5 +279,195 @@ class SubProductTree {
         "subproduct": subproduct,
         "productId": productId,
         "amount": amount,
+      };
+}
+
+List<Schedule> scheduleFromJson(String str) =>
+    List<Schedule>.from(json.decode(str).map((x) => Schedule.fromJson(x)));
+
+String scheduleToJson(List<Schedule> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+
+class Schedule {
+  Schedule({
+    this.id,
+    this.start,
+    this.end,
+    this.workCenterId,
+    this.productId,
+  });
+
+  final int id;
+  final int start;
+  final int end;
+  final int workCenterId;
+  final String productId;
+
+  Schedule copyWith({
+    int id,
+    int start,
+    int end,
+    int workCenterId,
+    WorkCenter workCenter,
+    String productId,
+    Product product,
+  }) =>
+      Schedule(
+        id: id ?? this.id,
+        start: start ?? this.start,
+        end: end ?? this.end,
+        workCenterId: workCenterId ?? this.workCenterId,
+        productId: productId ?? this.productId,
+      );
+
+  factory Schedule.fromJson(Map<String, dynamic> json) => Schedule(
+        id: json["id"],
+        start: json["start"],
+        end: json["end"],
+        workCenterId: json["workCenterId"],
+        productId: json["productId"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "id": id,
+        "start": start,
+        "end": end,
+        "workCenterId": workCenterId,
+        "productId": productId,
+      };
+}
+
+List<WorkCenter> workCenterFromJson(String str) =>
+    List<WorkCenter>.from(json.decode(str).map((x) => WorkCenter.fromJson(x)));
+
+String workCenterToJson(List<WorkCenter> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+
+class WorkCenter {
+  WorkCenter({
+    this.id,
+    this.name,
+    this.active,
+  });
+
+  final int id;
+  final String name;
+  final bool active;
+
+  WorkCenter copyWith({
+    int id,
+    String name,
+    bool active,
+    List<WorkCenterOperation> workCenterOperation,
+    List<Schedule> schedule,
+  }) =>
+      WorkCenter(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        active: active ?? this.active,
+      );
+
+  factory WorkCenter.fromJson(Map<String, dynamic> json) => WorkCenter(
+        id: json["id"],
+        name: json["name"],
+        active: json["active"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "id": id,
+        "name": name,
+        "active": active,
+      };
+}
+
+List<WorkCenterOperation> workCenterOperationFromJson(String str) =>
+    List<WorkCenterOperation>.from(
+        json.decode(str).map((x) => WorkCenterOperation.fromJson(x)));
+
+String workCenterOperationToJson(List<WorkCenterOperation> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+
+class WorkCenterOperation {
+  WorkCenterOperation({
+    this.id,
+    this.speed,
+    this.workCenterId,
+    this.operationId,
+  });
+
+  final int id;
+  final int speed;
+  final int workCenterId;
+  final int operationId;
+
+  WorkCenterOperation copyWith({
+    int id,
+    int speed,
+    int workCenterId,
+    WorkCenter workCenter,
+    int operationId,
+    Operation operation,
+  }) =>
+      WorkCenterOperation(
+        id: id ?? this.id,
+        speed: speed ?? this.speed,
+        workCenterId: workCenterId ?? this.workCenterId,
+        operationId: operationId ?? this.operationId,
+      );
+
+  factory WorkCenterOperation.fromJson(Map<String, dynamic> json) =>
+      WorkCenterOperation(
+        id: json["id"],
+        speed: json["speed"],
+        workCenterId: json["workCenterId"],
+        operationId: json["operationId"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "id": id,
+        "speed": speed,
+        "workCenterId": workCenterId,
+        "operationId": operationId,
+      };
+}
+
+List<Operation> operationFromJson(String str) =>
+    List<Operation>.from(json.decode(str).map((x) => Operation.fromJson(x)));
+
+String operationToJson(List<Operation> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+
+class Operation {
+  Operation({
+    this.id,
+    this.name,
+    this.productType,
+  });
+
+  final int id;
+  final String name;
+  final String productType;
+
+  Operation copyWith({
+    int id,
+    String name,
+    String productType,
+  }) =>
+      Operation(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        productType: productType ?? this.productType,
+      );
+
+  factory Operation.fromJson(Map<String, dynamic> json) => Operation(
+        id: json["id"],
+        name: json["name"],
+        productType: json["productType"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "id": id,
+        "name": name,
+        "productType": productType, 
       };
 }

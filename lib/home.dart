@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:convert';
+
+import 'package:assignment2/models.dart';
+import 'package:assignment2/service.dart';
 import 'package:flutter/material.dart';
 import 'package:select_dialog/select_dialog.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
@@ -22,11 +26,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final products = ['Coffee', 'Milk', 'Chocolate', 'Banana'];
-  final orders = <Map>[];
   String selectedProduct = '';
   String selectedDate = '';
   String dateFormat = '';
+  final productsTest = ['Apple', 'Banana'];
+  ApiServices _apiService = ApiServices();
 
   String _formatDate(DateTime date) {
     dateFormat = date.year.toString() +
@@ -58,7 +62,7 @@ class _HomePageState extends State<HomePage> {
               ElevatedButton(
                   onPressed: () {
                     if (selectedProduct != '' && selectedDate != '') {
-                      orders.add({selectedProduct: selectedDate});
+                      //orders.add({selectedProduct: selectedDate});
                       Navigator.pop(context);
                       selectedProduct = '';
                       selectedDate = '';
@@ -74,18 +78,7 @@ class _HomePageState extends State<HomePage> {
                   ElevatedButton(
                     child: Text('Select a Product'),
                     onPressed: () {
-                      SelectDialog.showModal<String>(
-                        context,
-                        label: "Select a Product to Order",
-                        showSearchBox: false,
-                        selectedValue: selectedProduct,
-                        items: products,
-                        onChange: (String selected) {
-                          setState(() {
-                            selectedProduct = selected;
-                          });
-                        },
-                      );
+                      //_showListDialog(products);
                     },
                   ),
                   SizedBox(height: 2.0),
@@ -121,17 +114,44 @@ class _HomePageState extends State<HomePage> {
           ),
           title: Text('Your Orders'),
         ),
-        body: ListView.builder(
-          itemCount: orders.length,
+        /*body: ListView.builder(
+          //itemCount: orders.length,
+          itemCount: product.length,
           padding: EdgeInsets.all(16.0),
           itemBuilder: (context, index) {
             return Card(
               child: ListTile(
-                title: Text(orders[index].keys.toString()),
-                leading: Text(orders[index].values.toString()),
+                //title: Text(orders[index].keys.toString()),
+                //leading: Text(orders[index].values.toString()),
+                //TODO: Show orders instead of products
+                //TODO: Show products in SelectDialog section
+                title: Text(product[index].name),
               ),
             );
           },
+        ),*/
+        body: SafeArea(
+          child: FutureBuilder(
+            future: _apiService.getAllProducts(),
+            builder:
+                (BuildContext context, AsyncSnapshot<List<Product>> snapshot) {
+              if (snapshot.hasError) {
+                return Center(
+                  child: Text(
+                      "Something wrong with message: ${snapshot.error.toString()}"),
+                );
+              } else if (snapshot.connectionState == ConnectionState.done) {
+                // Called when the future is resolved (i.e: when the result is returned from the server)
+                List<Product> products = snapshot.data;
+                return _buildListView(products);
+              } else {
+                return Center(
+                  child:
+                      CircularProgressIndicator(), // Loading with the request is being processed
+                );
+              }
+            },
+          ),
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
@@ -141,5 +161,40 @@ class _HomePageState extends State<HomePage> {
           },
           child: Icon(Icons.shopping_basket),
         ));
+  }
+
+  Widget _buildListView(List<Product> products) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      child: ListView.builder(
+        itemCount: products.length,
+        itemBuilder: (context, index) {
+          Product product = products[index];
+          return Card(
+            child: ListTile(
+              title: Text(product.name.toString()),
+              leading: Text(product.productType.toString()),
+              //TODO: Show orders instead of products
+              //TODO: Show products in SelectDialog section
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<String> _showListDialog(List<Product> products) {
+    return SelectDialog.showModal<String>(
+      context,
+      label: "Select a Product to Order",
+      showSearchBox: false,
+      selectedValue: selectedProduct,
+      //items: products,
+      onChange: (String selected) {
+        setState(() {
+          selectedProduct = selected;
+        });
+      },
+    );
   }
 }
