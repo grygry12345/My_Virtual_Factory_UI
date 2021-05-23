@@ -11,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import 'dart:convert';
+
 import 'package:assignment2/models.dart';
 import 'package:assignment2/service.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +26,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String selectedProduct = '';
-  String selectedDate = '';
+  DateTime selectedDate;
   String dateFormat = '';
   final productsTest = ['Apple', 'Banana'];
 
@@ -42,6 +44,7 @@ class _HomePageState extends State<HomePage> {
         date.second.toString();
     return dateFormat;
   }
+
   String _formatDateUX(DateTime date) {
     dateFormat = date.day.toString() +
         '-' +
@@ -57,158 +60,155 @@ class _HomePageState extends State<HomePage> {
     return dateFormat;
   }
 
-  _showFormDialog(BuildContext context) {
-    return showDialog(
-        context: context,
-        barrierDismissible: true,
-        builder: (param) {
-          return AlertDialog(
-            actions: <Widget>[
-              TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text('Cancel')),
-              ElevatedButton(
-                  onPressed: () {
-                    if (selectedProduct != '' && selectedDate != '') {
-                      //orders.add({selectedProduct: selectedDate});
-                      Navigator.pop(context);
-                      selectedProduct = '';
-                      selectedDate = '';
-                      setState(() {});
-                    } else {}
-                  },
-                  child: Text('Order'))
-            ],
-            title: Text('Give an Order'),
-            content: SingleChildScrollView(
-              child: Column(
-                children: [
-                  ElevatedButton(
-                    child: Text('Select a Product'),
-                    onPressed: () {
-                      SelectDialog.showModal<String>(
-                        context,
-                        label: "Select a Product to Order",
-                        showSearchBox: false,
-                        selectedValue: selectedProduct,
-                        items: productsTest,
-                        onChange: (String selected) {
-                          setState(() {
-                            selectedProduct = selected;
-                          });
-                        },
-                      );
-                    },
-                  ),
-                  SizedBox(height: 2.0),
-                  ElevatedButton(
-                      onPressed: () {
-                        DatePicker.showDateTimePicker(context,
-                            showTitleActions: true,
-                            onChanged: (date) {}, onConfirm: (date) {
-                          print('confirm $date');
-                          selectedDate = _formatDateDB(date);
-                        }, currentTime: DateTime.now());
-                      },
-                      child: Text(
-                        'Select Deadline',
-                      )),
-                ],
-              ),
-            ),
-          );
-        });
+  List<Product> products;
+  getProducts() {
+    ApiServices().getAllProducts().then((response) {
+      Iterable list = json.decode(response.body);
+      List<Product> productList = [];
+      productList = list.map((e) => Product.fromJson(e)).toList();
+      setState(() {
+        products = productList;
+      });
+    });
   }
 
+  List<Order> orders;
+  getOrders() {
+    ApiServices().getAllOrders().then((response) {
+      Iterable list = json.decode(response.body);
+      List<Order> orderList = [];
+      orderList = list.map((e) => Order.fromJson(e)).toList();
+      setState(() {
+        orders = orderList;
+      });
+    });
+  }
+
+  Order order;
   @override
   Widget build(BuildContext context) {
-    ApiServices _apiService = ApiServices();
-    //Future<List<Product>> products = _apiService.getAllProducts();
-
+    getOrders();
+    getProducts();
     return Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: Icon(
-              Icons.menu,
-              semanticLabel: 'menu',
-            ),
-            onPressed: () {},
-          ),
-          title: Text('Your Orders'),
-        ),
-        /*body: ListView.builder(
-          //itemCount: orders.length,
-          itemCount: product.length,
-          padding: EdgeInsets.all(16.0),
-          itemBuilder: (context, index) {
-            return Card(
-              child: ListTile(
-                //title: Text(orders[index].keys.toString()),
-                //leading: Text(orders[index].values.toString()),
-                //TODO: Show orders instead of products
-                //TODO: Show products in SelectDialog section
-                title: Text(product[index].name),
-              ),
-            );
-          },
-        ),*/
-        body: SafeArea(
-          child: FutureBuilder(
-            future: _apiService.getAllOrders(),
-            builder:
-                (BuildContext context, AsyncSnapshot<List<Order>> snapshot) {
-              if (snapshot.hasError) {
-                return Center(
-                  child: Text(
-                      "Something wrong with message: ${snapshot.error.toString()}"),
-                );
-              } else if (snapshot.connectionState == ConnectionState.done) {
-                // Called when the future is resolved (i.e: when the result is returned from the server)
-                List<Order> orders = snapshot.data;
-                return _buildOrderListView(orders);
-              } else {
-                return Center(
-                  child:
-                      CircularProgressIndicator(), // Loading with the request is being processed
-                );
-              }
-            },
-          ),
-        ),
+        appBar: _buildAppbar(),
+        body: orders == null
+            ? Center(child: Text('Failed to Fetch Data'))
+            : _buildOrders(),
         floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            _showFormDialog(context);
-            dateFormat = _formatDateDB(DateTime.now());
-            print(dateFormat);
+          onPressed: () async {
+            //_showFormDialog(context);
+            await showInfoDialog(context);
           },
           child: Icon(Icons.shopping_basket),
         ));
   }
 
-  Widget _buildOrderListView(List<Order> orders) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-      child: ListView.builder(
-        itemCount: orders.length,
-        itemBuilder: (context, index) {
-          Order order = orders[index];
-          return Card(
-            child: ListTile(
-              leading: Text('Order '+order.id.toString()),
-              title: Text('Customer '+order.customerId.toString()+'\'s Order'),
-              subtitle: Text('Order Date: ' +
-                  _formatDateUX(order.orderDate) +
-                  '\nOrder Deadline: ' +
-                  _formatDateUX(order.deadline)),
-                  
-              //TODO: Show orders instead of products
-              //TODO: Show products in SelectDialog section
-            ),
+  Future<void> showInfoDialog(BuildContext context) async {
+    return await showDialog(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return AlertDialog(
+                title: Text('Give an Order'),
+                content: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      ElevatedButton(
+                          onPressed: () {
+                            DatePicker.showDateTimePicker(context,
+                                showTitleActions: true,
+                                onChanged: (date) {}, onConfirm: (date) {
+                              selectedDate = date;
+                            });
+                          },
+                          child: Text(
+                            'Select Deadline',
+                          )),
+                      SizedBox(height: 2.0),
+                      ElevatedButton(
+                        child: Text('Select a Product'),
+                        onPressed: () {
+                          SelectDialog.showModal<String>(
+                            context,
+                            label: "Select a Product to Order",
+                            showSearchBox: false,
+                            selectedValue: selectedProduct,
+                            items: products.map((e) => e.name).toList(),
+                            onChange: (String selected) {
+                              setState(() {
+                                selectedProduct = selected;
+                              });
+                            },
+                          );
+                        },
+                      ),
+                      SizedBox(height: 2.0),
+                      Text(selectedProduct),
+                      SizedBox(height: 2.0),
+                      selectedDate == null
+                          ? Text('')
+                          : Text(_formatDateUX(selectedDate)),
+                    ],
+                  ),
+                ),
+                actions: <Widget>[
+                  TextButton(
+                      onPressed: () {
+                        //Navigator.pop(context);
+                        Navigator.of(context).pop();
+                      },
+                      child: Text('Cancel')),
+                  ElevatedButton(
+                      onPressed: () {
+                        if (selectedProduct != '' && selectedDate != null) {
+                          Navigator.pop(context);
+                          selectedProduct = '';
+                          selectedDate = null;
+
+                          setState(() {});
+                        } else {}
+                      },
+                      child: Text('Order'))
+                ],
+              );
+            },
           );
-        },
+        });
+  }
+
+  Widget _buildOrders() {
+    return ListView.builder(
+      itemCount: orders.length,
+      padding: EdgeInsets.all(16.0),
+      itemBuilder: (context, index) {
+        return Card(
+          child: ListTile(
+            leading: Text('Order ' + orders[index].id.toString()),
+            title: Text('Customer ' +
+                orders[index].customerId.toString() +
+                '\'s Order'),
+            subtitle: Text('Order Date: ' +
+                _formatDateUX(orders[index].orderDate) +
+                '\nOrder Deadline ' +
+                _formatDateUX(orders[index].deadline)),
+            onTap: () {},
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAppbar() {
+    return AppBar(
+      leading: IconButton(
+        icon: Icon(
+          Icons.menu,
+          semanticLabel: 'menu',
+        ),
+        onPressed: () {},
       ),
+      title: Text('Orders'),
     );
   }
 }

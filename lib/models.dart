@@ -13,9 +13,9 @@ class User {
     this.password,
   });
 
-  final int id;
-  final String name;
-  final String password;
+  int id;
+  String name;
+  String password;
 
   User copyWith({
     int id,
@@ -54,9 +54,9 @@ class Customer {
     this.password,
   });
 
-  final int id;
-  final String name;
-  final String password;
+  int id;
+  String name;
+  String password;
 
   Customer copyWith({
     int id,
@@ -97,10 +97,10 @@ class Order {
     this.customerId,
   });
 
-  final int id;
-  final DateTime orderDate;
-  final DateTime deadline;
-  final int customerId;
+  int id;
+  DateTime orderDate;
+  DateTime deadline;
+  int customerId;
 
   Order copyWith({
     int id,
@@ -148,10 +148,10 @@ class OrderItem {
     this.productId,
   });
 
-  final int id;
-  final String amount;
-  final int orderId;
-  final String productId;
+  int id;
+  String amount;
+  int orderId;
+  String productId;
 
   OrderItem copyWith({
     int id,
@@ -197,10 +197,10 @@ class Product {
     this.isSalable,
   });
 
-  final String id;
-  final String name;
-  final String productType;
-  final bool isSalable;
+  String id;
+  String name;
+  String productType;
+  bool isSalable;
 
   Product copyWith({
     String id,
@@ -248,10 +248,10 @@ class SubProductTree {
     this.amount,
   });
 
-  final int id;
-  final String subproduct;
-  final String productId;
-  final String amount;
+  int id;
+  String subproduct;
+  String productId;
+  String amount;
 
   SubProductTree copyWith({
     int id,
@@ -297,11 +297,11 @@ class Schedule {
     this.productId,
   });
 
-  final int id;
-  final int start;
-  final int end;
-  final int workCenterId;
-  final String productId;
+  int id;
+  int start;
+  int end;
+  int workCenterId;
+  String productId;
 
   Schedule copyWith({
     int id,
@@ -350,9 +350,9 @@ class WorkCenter {
     this.active,
   });
 
-  final int id;
-  final String name;
-  final bool active;
+  int id;
+  String name;
+  bool active;
 
   WorkCenter copyWith({
     int id,
@@ -395,10 +395,10 @@ class WorkCenterOperation {
     this.operationId,
   });
 
-  final int id;
-  final int speed;
-  final int workCenterId;
-  final int operationId;
+  int id;
+  int speed;
+  int workCenterId;
+  int operationId;
 
   WorkCenterOperation copyWith({
     int id,
@@ -444,9 +444,9 @@ class Operation {
     this.productType,
   });
 
-  final int id;
-  final String name;
-  final String productType;
+  int id;
+  String name;
+  String productType;
 
   Operation copyWith({
     int id,
@@ -468,6 +468,6 @@ class Operation {
   Map<String, dynamic> toJson() => {
         "id": id,
         "name": name,
-        "productType": productType, 
+        "productType": productType,
       };
 }

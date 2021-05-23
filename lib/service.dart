@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:http/http.dart' show Client;
+import 'package:http/http.dart' as http;
 import 'package:assignment2/models.dart';
 
 class ApiServices {
@@ -6,13 +9,13 @@ class ApiServices {
   Client client = Client();
 
   //Get all products
-  Future<List<Product>> getAllProducts() async {
-    final response = await client.get(Uri.parse("$baseUrl/Product"));
-    if (response.statusCode == 200) {
-      return productFromJson(response.body);
-    } else {
-      return null;
-    }
+  Future getAllProducts() async {
+    return await http.get(Uri.parse("$baseUrl/Product"));
+  }
+
+  //Get all orders
+  Future getAllOrders() async {
+    return await http.get(Uri.parse("$baseUrl/Order"));
   }
 
   //Create a new Order
@@ -28,13 +31,15 @@ class ApiServices {
       return false;
   }
 
-  //Get all Orders
-  Future<List<Order>> getAllOrders() async {
-    final response = await client.get(Uri.parse("$baseUrl/Order"));
-    if (response.statusCode == 200) {
-      return orderFromJson(response.body);
-    } else {
-      return null;
-    }
+  Map<String, String> header = {
+    'Content-Type': 'application/json',
+    'accept': 'text/plain'
+  };
+  Future<bool> postOrder(Order order) async {
+    var myOrder = order.toJson();
+    var orderBody = json.encode(myOrder);
+    var res = await http.post(Uri.parse("$baseUrl/Order"),
+        headers: header, body: orderBody);
+    return Future.value(res.statusCode == 200 ? true : false);
   }
 }
