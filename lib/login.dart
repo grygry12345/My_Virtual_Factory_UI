@@ -1,4 +1,9 @@
+import 'dart:convert';
+
+import 'package:assignment2/service.dart';
 import 'package:flutter/material.dart';
+
+import 'models.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -10,6 +15,31 @@ class _LoginPageState extends State<LoginPage> {
   final _adminPasswordController = TextEditingController();
   final _userNameController = TextEditingController();
   final _userPasswordController = TextEditingController();
+
+  List<Customer> _customers;
+  getCustomers() {
+    ApiServices().getAllCustomers().then((response) {
+      Iterable list = json.decode(response.body);
+      List<Customer> customerList = [];
+      customerList = list.map((e) => Customer.fromJson(e)).toList();
+      setState(() {
+        _customers = customerList;
+      });
+    });
+  }
+
+  List<User> _users;
+  getUsers() {
+    ApiServices().getAllUsers().then((response) {
+      Iterable list = json.decode(response.body);
+      List<User> userList = [];
+      userList = list.map((e) => User.fromJson(e)).toList();
+      setState(() {
+        _users = userList;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,8 +81,9 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 ElevatedButton(
                   child: Text('NEXT'),
-                  onPressed: () {
-                    Navigator.pop(context);
+                  onPressed: () async {
+                    getCustomers();
+                    await loginControlCustomer();
                   },
                 ),
               ],
@@ -84,8 +115,9 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 ElevatedButton(
                   child: Text('NEXT'),
-                  onPressed: () {
-                    Navigator.pop(context);
+                  onPressed: () async {
+                    getUsers();
+                    await loginControlAdmin();
                   },
                 ),
               ],
@@ -94,5 +126,57 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  Future loginControlCustomer() async {
+    bool isLogin = false;
+    bool userFound = false;
+
+    for (var customer in _customers) {
+      if (_userNameController.text == customer.name) {
+        userFound = true;
+        if (_userPasswordController.text == customer.password) {
+          isLogin = true;
+          break;
+        } else {
+          break;
+        }
+      } else {
+        continue;
+      }
+    }
+
+    if (isLogin == false && userFound == false)
+      print('Customer Not Found');
+    else if (isLogin == false && userFound == true)
+      print('Incorrect Password');
+    else
+      print('Login succeed');
+  }
+
+  Future loginControlAdmin() async {
+    bool isLogin = false;
+    bool userFound = false;
+
+    for (var user in _users) {
+      if (_adminNameController.text == user.name) {
+        userFound = true;
+        if (_adminPasswordController.text == user.password) {
+          isLogin = true;
+          break;
+        } else {
+          break;
+        }
+      } else {
+        continue;
+      }
+    }
+
+    if (isLogin == false && userFound == false)
+      print('User Not Found');
+    else if (isLogin == false && userFound == true)
+      print('Incorrect Password');
+    else
+      print('Login succeed');
   }
 }
