@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:assignment2/models.dart';
 import 'package:assignment2/http_helper.dart';
 
-final String baseUrl = 'https://localhost:44314/api';
+final String baseUrl = 'http://localhost:48233/api';
 LoginModel currentLogin;
 
 class ApiServices {

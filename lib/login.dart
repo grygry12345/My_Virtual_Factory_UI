@@ -82,7 +82,9 @@ class _LoginPageState extends State<LoginPage> {
                   child: Text('NEXT'),
                   onPressed: () async {
                     getCustomers();
-                    await loginControlCustomer();
+                    Future.delayed(Duration(milliseconds: 100), () {
+                      loginControlCustomer();
+                    });
                   },
                 ),
               ],
@@ -116,7 +118,9 @@ class _LoginPageState extends State<LoginPage> {
                   child: Text('NEXT'),
                   onPressed: () async {
                     getUsers();
-                    await loginControlAdmin();
+                    Future.delayed(Duration(milliseconds: 100), () {
+                      loginControlAdmin();
+                    });
                   },
                 ),
               ],
