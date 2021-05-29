@@ -168,16 +168,12 @@ class _LoginPageState extends State<LoginPage> {
   Future loginControlAdmin() async {
     bool isLogin = false;
     bool userFound = false;
-    int loggedUserId;
 
     for (var user in _users) {
       if (_adminNameController.text == user.name) {
         userFound = true;
         if (_adminPasswordController.text == user.password) {
           isLogin = true;
-          loggedUserId = user.id;
-          //loggedUser.name = user.name;
-          //loggedUser.password = user.password;
           break;
         } else {
           break;
@@ -193,7 +189,11 @@ class _LoginPageState extends State<LoginPage> {
       print('Incorrect Password');
     else {
       print('Login succeed');
-      Navigator.pop(context);
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomePage(0),
+          ));
     }
   }
 }
