@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'home.dart';
 import 'login.dart';
 
 class App extends StatefulWidget {
@@ -12,8 +11,7 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Factory',
-      home: HomePage(1),
-      initialRoute: '/login',
+      home: LoginPage(),
       onGenerateRoute: _getRoute,
     );
   }

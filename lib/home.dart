@@ -57,13 +57,13 @@ class _HomePageState extends State<HomePage> {
       Iterable list = json.decode(response.body);
       List<Product> productList = [];
       productList = list.map((e) => Product.fromJson(e)).toList();
+      productList =
+          productList.where((element) => element.isSalable == true).toList();
       setState(() {
         products = productList;
       });
     });
   }
-
-  
 
   List<Order> orders;
   getOrders() {
@@ -77,27 +77,28 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  //List<Order> customerOrders;
+  List<Order> customerOrders = [];
   getOrdersWithUid(int id) {
     ApiServices().getAllOrders().then((response) {
       Iterable list = json.decode(response.body);
       List<Order> orderList = [];
       orderList = list.map((e) => Order.fromJson(e)).toList();
       setState(() {
-        for (int i = 0; i < orderList.length; i++) {
-          if (orderList[i].id == id) {
-            orders.add(orderList[i]);
-          }
-        }
+        orders = orderList.where((order) => order.customerId == id).toList();
       });
     });
   }
 
-  Order order;
   @override
   Widget build(BuildContext context) {
-    getOrders();
-    //getOrdersWithUid(widget.loggedCustomerId);
+    //getOrders();
+    if (widget.loggedCustomerId != 0) {
+      getOrdersWithUid(widget.loggedCustomerId);
+    } else {
+      getOrders();
+    }
+
+    getProducts();
     return Scaffold(
         appBar: _buildAppbar(),
         body: orders == null
