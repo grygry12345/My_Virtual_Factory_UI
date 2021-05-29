@@ -125,7 +125,6 @@ class Order {
       );
 
   Map<String, dynamic> toJson() => {
-        "id": id,
         "orderDate":
             "${orderDate.year.toString().padLeft(4, '0')}-${orderDate.month.toString().padLeft(2, '0')}-${orderDate.day.toString().padLeft(2, '0')}",
         "deadline":
@@ -176,7 +175,6 @@ class OrderItem {
       );
 
   Map<String, dynamic> toJson() => {
-        "id": id,
         "amount": amount,
         "orderId": orderId,
         "productId": productId,
@@ -484,7 +482,7 @@ class LoginModel {
         : null;
   }
 
-  Map<String,dynamic> toJson(){
+  Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     if (this.customer != null) {
       data['customer'] = this.customer.toJson();

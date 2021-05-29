@@ -142,8 +142,6 @@ class _LoginPageState extends State<LoginPage> {
         if (_userPasswordController.text == customer.password) {
           isLogin = true;
           loggedCustomerId = customer.id;
-          //loggedCustomer.name = customer.name;
-          //loggedCustomer.password = customer.password;
           break;
         } else {
           break;
@@ -160,7 +158,6 @@ class _LoginPageState extends State<LoginPage> {
     else {
       print('Login succeed');
       print(loggedCustomerId);
-      //Navigator.pop(context);
       Navigator.push(
           context,
           MaterialPageRoute(

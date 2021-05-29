@@ -3,9 +3,10 @@ import 'dart:convert';
 import 'package:http/http.dart' show Client;
 import 'package:http/http.dart' as http;
 import 'package:assignment2/models.dart';
-import 'package:assignment2/http_helper.dart';
 
-final String baseUrl = 'http://localhost:48233/api';
+import 'models.dart';
+
+final String baseUrl = 'https://localhost:44314/api';
 LoginModel currentLogin;
 
 class ApiServices {
@@ -27,6 +28,10 @@ class ApiServices {
 
   Future getAllCustomers() async {
     return await http.get(Uri.parse("$baseUrl/Customer"));
+  }
+
+  Future getAllOrderItems() async {
+    return await http.get(Uri.parse("$baseUrl/OrderItem"));
   }
 
   void iterateCustomer(String jsonStr) {
@@ -60,6 +65,7 @@ class ApiServices {
     'Content-Type': 'application/json',
     'accept': 'text/plain'
   };
+
   Future<bool> postOrder(Order order) async {
     var myOrder = order.toJson();
     var orderBody = json.encode(myOrder);
@@ -67,21 +73,12 @@ class ApiServices {
         headers: header, body: orderBody);
     return Future.value(res.statusCode == 200 ? true : false);
   }
-}
 
-class LoginService {
-  Future<LoginModel> logIn(String username, String password) async {
-    Map<String, String> accountInput = {"name": username, "password": password};
-
-    var rs = await HttpHelper.post("$baseUrl/Customer", accountInput);
-    print(rs.statusCode);
-    if (rs.statusCode == 200) {
-      var jsonObject = jsonDecode(rs.body);
-      var account = LoginModel.fromJson(jsonObject);
-      currentLogin = account;
-
-      return account;
-    }
-    return null;
+  Future<bool> postOrderItem(OrderItem orderItem) async {
+    var myOrder = orderItem.toJson();
+    var orderBody = json.encode(myOrder);
+    var res = await http.post(Uri.parse("$baseUrl/Order"),
+        headers: header, body: orderBody);
+    return Future.value(res.statusCode == 200 ? true : false);
   }
 }

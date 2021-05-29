@@ -6,8 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:select_dialog/select_dialog.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
+import 'models.dart';
+import 'service.dart';
+
 class HomePage extends StatefulWidget {
-  int loggedCustomerId;
+  final int loggedCustomerId;
   //HomePage(User loggedCustomer);
   HomePage(this.loggedCustomerId);
 
@@ -20,6 +23,7 @@ class _HomePageState extends State<HomePage> {
   DateTime selectedDate;
   String dateFormat = '';
   final productsTest = ['Apple', 'Banana'];
+  final selectedAmountController = TextEditingController();
 
   String _formatDateDB(DateTime date) {
     dateFormat = date.year.toString() +
@@ -77,6 +81,18 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  List<OrderItem> orderItems;
+  getOrderItems() {
+    ApiServices().getAllOrderItems().then((response) {
+      Iterable list = json.decode(response.body);
+      List<OrderItem> orderItemsList = [];
+      orderItemsList = list.map((e) => OrderItem.fromJson(e)).toList();
+      setState(() {
+        orderItems = orderItemsList;
+      });
+    });
+  }
+
   List<Order> customerOrders = [];
   getOrdersWithUid(int id) {
     ApiServices().getAllOrders().then((response) {
@@ -89,6 +105,26 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  List<Customer> customers;
+  getCustomers() {
+    ApiServices().getAllCustomers().then((response) {
+      Iterable list = json.decode(response.body);
+      List<Customer> customerList = [];
+      customerList = list.map((e) => Customer.fromJson(e)).toList();
+      setState(() {
+        customers = customerList;
+      });
+    });
+  }
+
+  addOrder(Order order) {
+    ApiServices().postOrder(order).then((response) {});
+  }
+
+  addOrderItem(OrderItem orderItem) {
+    ApiServices().postOrderItem(orderItem).then((response) {});
+  }
+
   @override
   Widget build(BuildContext context) {
     //getOrders();
@@ -98,7 +134,9 @@ class _HomePageState extends State<HomePage> {
       getOrders();
     }
 
+    getOrderItems();
     getProducts();
+
     return Scaffold(
         appBar: _buildAppbar(),
         body: orders == null
@@ -154,6 +192,14 @@ class _HomePageState extends State<HomePage> {
                         },
                       ),
                       SizedBox(height: 2.0),
+                      TextField(
+                        controller: selectedAmountController,
+                        decoration: InputDecoration(
+                          filled: true,
+                          labelText: 'Amount',
+                        ),
+                      ),
+                      SizedBox(height: 2.0),
                       Text(selectedProduct),
                       SizedBox(height: 2.0),
                       selectedDate == null
@@ -167,11 +213,25 @@ class _HomePageState extends State<HomePage> {
                       onPressed: () {
                         //Navigator.pop(context);
                         Navigator.of(context).pop();
+                        selectedProduct = '';
+                        selectedDate = null;
                       },
                       child: Text('Cancel')),
                   ElevatedButton(
                       onPressed: () {
-                        if (selectedProduct != '' && selectedDate != null) {
+                        if (selectedProduct != '' &&
+                            selectedDate != null &&
+                            selectedAmountController != null) {
+                          Order order = new Order();
+                          //OrderItem orderItem = new OrderItem();
+
+                          order.customerId = widget.loggedCustomerId;
+                          order.deadline = selectedDate;
+                          order.orderDate = DateTime.now();
+                          //orderItem.amount = selectedAmountController.text;
+                          //orderItem.orderId =
+                          //orderItem.productId =
+                          addOrder(order);
                           Navigator.pop(context);
                           selectedProduct = '';
                           selectedDate = null;
