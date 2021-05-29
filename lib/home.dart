@@ -23,7 +23,7 @@ class _HomePageState extends State<HomePage> {
   DateTime selectedDate;
   String dateFormat = '';
   final productsTest = ['Apple', 'Banana'];
-  final selectedAmountController = TextEditingController();
+  var selectedAmountController = TextEditingController();
 
   String _formatDateDB(DateTime date) {
     dateFormat = date.year.toString() +
@@ -77,6 +77,18 @@ class _HomePageState extends State<HomePage> {
       orderList = list.map((e) => Order.fromJson(e)).toList();
       setState(() {
         orders = orderList;
+      });
+    });
+  }
+
+  List<Order> allOrders;
+  getOrdersLength() {
+    ApiServices().getAllOrders().then((response) {
+      Iterable list = json.decode(response.body);
+      List<Order> orderList = [];
+      orderList = list.map((e) => Order.fromJson(e)).toList();
+      setState(() {
+        allOrders = orderList;
       });
     });
   }
@@ -136,6 +148,8 @@ class _HomePageState extends State<HomePage> {
 
     getOrderItems();
     getProducts();
+    getCustomers();
+    getOrdersLength();
 
     return Scaffold(
         appBar: _buildAppbar(),
@@ -212,6 +226,7 @@ class _HomePageState extends State<HomePage> {
                   TextButton(
                       onPressed: () {
                         //Navigator.pop(context);
+                        print(allOrders.length + 1);
                         Navigator.of(context).pop();
                         selectedProduct = '';
                         selectedDate = null;
@@ -223,21 +238,28 @@ class _HomePageState extends State<HomePage> {
                             selectedDate != null &&
                             selectedAmountController != null) {
                           Order order = new Order();
-                          //OrderItem orderItem = new OrderItem();
+                          OrderItem orderItem = new OrderItem();
 
                           order.customerId = widget.loggedCustomerId;
                           order.deadline = selectedDate;
                           order.orderDate = DateTime.now();
-                          //orderItem.amount = selectedAmountController.text;
-                          //orderItem.orderId =
-                          //orderItem.productId =
                           addOrder(order);
+
+                          orderItem.amount = selectedAmountController.text;
+                          orderItem.orderId = allOrders.length+1;
+                          orderItem.productId = 'usb013';
+                          addOrderItem(orderItem);
+
                           Navigator.pop(context);
                           selectedProduct = '';
                           selectedDate = null;
 
                           setState(() {});
-                        } else {}
+                        } else {
+                          print(selectedProduct);
+                          print(selectedDate);
+                          print(selectedAmountController);
+                        }
                       },
                       child: Text('Order'))
                 ],
@@ -252,16 +274,28 @@ class _HomePageState extends State<HomePage> {
       itemCount: orders.length,
       padding: EdgeInsets.all(16.0),
       itemBuilder: (context, index) {
+        var customerIterator = customers
+            .where((element) => element.id == orders[index].customerId)
+            .toList();
+        var orderItemIterator = orderItems
+            .where((element) => element.orderId == orders[index].id)
+            .toList();
+        var productIterator = products
+            .where((element) => element.id == orderItems[index].productId)
+            .toList();
+
         return Card(
           child: ListTile(
             leading: Text('Order ' + orders[index].id.toString()),
-            title: Text('Customer ' +
-                orders[index].customerId.toString() +
-                '\'s Order'),
+            title: Text(customerIterator[0].name + '\'s Order'),
             subtitle: Text('Order Date: ' +
                 _formatDateUX(orders[index].orderDate) +
                 '\nOrder Deadline ' +
-                _formatDateUX(orders[index].deadline)),
+                _formatDateUX(orders[index].deadline) +
+                '\nAmount: ' +
+                orderItemIterator[0].amount +
+                '\nProduct: ' +
+                productIterator[0].name),
             onTap: () {},
           ),
         );

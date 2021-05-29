@@ -71,14 +71,16 @@ class ApiServices {
     var orderBody = json.encode(myOrder);
     var res = await http.post(Uri.parse("$baseUrl/Order"),
         headers: header, body: orderBody);
+        print('postorder\n'+res.body);
     return Future.value(res.statusCode == 200 ? true : false);
   }
 
   Future<bool> postOrderItem(OrderItem orderItem) async {
     var myOrder = orderItem.toJson();
     var orderBody = json.encode(myOrder);
-    var res = await http.post(Uri.parse("$baseUrl/Order"),
+    var res = await http.post(Uri.parse("$baseUrl/OrderItem"),
         headers: header, body: orderBody);
+    print('postorderItem\n'+res.body);
     return Future.value(res.statusCode == 200 ? true : false);
   }
 }
