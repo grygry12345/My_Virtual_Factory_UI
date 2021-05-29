@@ -471,3 +471,25 @@ class Operation {
         "productType": productType,
       };
 }
+
+class LoginModel {
+  LoginModel({this.customer, this.token});
+
+  Customer customer;
+  String token;
+
+  LoginModel.fromJson(Map<String, dynamic> json) {
+    customer = json['customer'] != null
+        ? new Customer.fromJson(json['customer'])
+        : null;
+  }
+
+  Map<String,dynamic> toJson(){
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    if (this.customer != null) {
+      data['customer'] = this.customer.toJson();
+    }
+    data['token'] = this.token;
+    return data;
+  }
+}
